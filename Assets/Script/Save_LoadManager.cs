@@ -5,6 +5,7 @@ using System.IO;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class Save_LoadManager : MonoBehaviour 
@@ -153,6 +154,19 @@ public class Save_LoadManager : MonoBehaviour
         if (valueEnd == -1) return "";
         return json.Substring(valueStart, valueEnd - valueStart);
     }
+    //解析JSON数字
+    int ExtractJsonInt(string json, string key)
+    {
+        int start = json.IndexOf($"\"{key}\"");
+        if (start == -1) return 0;
+        int colon = json.IndexOf(":", start);
+        int valueStart = colon + 1;
+        while (valueStart < json.Length && json[valueStart] == ' ') valueStart++;
+        int valueEnd = valueStart;
+        while (valueEnd < json.Length && (char.IsDigit(json[valueEnd]) || json[valueEnd] == '-')) valueEnd++;
+        return int.Parse(json.Substring(valueStart, valueEnd - valueStart));
+    }
+
     //存档逻辑
     void Save(int index, string time, string dialogContent, byte[] screenshot)
     {
@@ -187,6 +201,7 @@ public class Save_LoadManager : MonoBehaviour
         if (string.IsNullOrEmpty(input)) return "";
         return input.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\n", "\\n").Replace("\r", "\\r");
     }
+   
     //加载逻辑
     void Load(int index)
     {
@@ -203,6 +218,9 @@ public class Save_LoadManager : MonoBehaviour
         if (File.Exists(dataPath))
         {
             string jsonData = File.ReadAllText(dataPath);
+            int number = ExtractJsonInt(jsonData, "number");
+            SceneManager.LoadScene(1);
+            Read.currentIndex = number - 1;
             Debug.Log($"读取存档数据: {jsonData}");
         }
     }
