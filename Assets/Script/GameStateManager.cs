@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameStateManager : MonoBehaviour
 {
@@ -27,6 +28,7 @@ public class GameStateManager : MonoBehaviour
     }
     public void relode(int index)
     {
+        SceneManager.LoadScene(1);
         currentIndex = index - 1;
     }
 }

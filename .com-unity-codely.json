@@ -1,16 +1,10 @@
 {
   "unity_port": -1,
-  "stream_port": 59548,
-  "created_date": "2026-08-11T05:21:19.657Z",
+  "stream_port": 64841,
+  "created_date": "2026-10-11T07:51:32.466Z",
   "project_path": "D:/unity/code/Vioce of the heart/Assets",
   "reloading": false,
-<<<<<<< HEAD
   "reason": "unity_quit",
-  "seq": 17939,
-  "last_heartbeat": "2026-10-11T07:39:06.208Z"
-=======
-  "reason": "ready",
-  "seq": 14052,
-  "last_heartbeat": "2026-10-11T07:06:13.772Z"
->>>>>>> parent of 8f9b610 (优化)
+  "seq": 553,
+  "last_heartbeat": "2026-10-11T07:56:11.783Z"
 }
