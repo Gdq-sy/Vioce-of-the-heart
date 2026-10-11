@@ -219,6 +219,7 @@ public class Save_LoadManager : MonoBehaviour
         {
             string jsonData = File.ReadAllText(dataPath);
             int number = ExtractJsonInt(jsonData, "number");
+            SceneManager.LoadScene(1);
             GameStateManager.Instance.relode(number);
             Debug.Log($"读取存档数据: {jsonData}");
         }
