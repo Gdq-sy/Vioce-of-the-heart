@@ -12,7 +12,7 @@ public class Open : MonoBehaviour, IPointerClickHandler
     public void OnPointerClick(PointerEventData eventData)
     {
         BlockNextClick = true;
-        if (targetObject != null && Read.Click)
+        if (targetObject != null && Constants.Click)
         {
             targetObject.SetActive(true);
         }

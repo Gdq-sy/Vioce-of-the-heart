@@ -1,9 +1,11 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class Read : MonoBehaviour
 {
@@ -14,13 +16,8 @@ public class Read : MonoBehaviour
     public Button save;
     public Button load;
     public Save_LoadManager saveLoadManager;
-
-
-    // 打字机速度（每秒字符数）
-    public float typeSpeed = 15f;
+    
     private int n = 0;
-    public static bool Click = true;
-    private bool skipShowBoxNextClick = false;
 
     private List<string> col1List = new List<string>();
     private List<string> col2List = new List<string>();
@@ -29,8 +26,6 @@ public class Read : MonoBehaviour
     private List<string> col5List = new List<string>();
     private List<string> col6List = new List<string>();
     private List<string> col7List = new List<string>();
-
-    public static int currentIndex = 0;
     
     // 打字机状态
     private bool isTyping = false;
@@ -41,12 +36,12 @@ public class Read : MonoBehaviour
         ReadCSV();
         save.onClick.AddListener(OnSave);
         load.onClick.AddListener(OnLoad);
-        Click = true;
-        if (currentIndex >= 0 && currentIndex < col1List.Count)
+        Constants.Click = true;
+        if (GameStateManager.Instance.CurrentIndex >= 0 && GameStateManager.Instance.CurrentIndex < col1List.Count)
         {
             targetObject.SetActive(true);
-            naem.text = col2List[currentIndex];
-            currentText = col3List[currentIndex];
+            naem.text = col2List[GameStateManager.Instance.CurrentIndex];
+            currentText = col3List[GameStateManager.Instance.CurrentIndex];
             isTyping = true;
             StartCoroutine(TypeText());
         }
@@ -62,18 +57,17 @@ public class Read : MonoBehaviour
             if (Open.BlockNextClick)
             {
                 Open.BlockNextClick = false;
-                Click = false;
+                Constants.Click = false;
                 return;
             }
             if (Exit.BlockNextClick)
             {
                 Exit.BlockNextClick = false;
-                Click = true;
+                Constants.Click = true;
                 return;
             }
-            if (Input.GetMouseButtonUp(0) && Click)
+            if (Input.GetMouseButtonUp(0) && Constants.Click)
             {
-            Debug.Log("点击有效, currentIndex=" + currentIndex + ", active=" + targetObject.activeSelf);
             //检查文本框是否被隐藏
             if (targetObject.activeSelf == false)
                 {
@@ -93,21 +87,20 @@ public class Read : MonoBehaviour
                     isTyping = false;
                     return;
                 }
-                Debug.Log(currentIndex);
-                // 否则前进到下一行
-                currentIndex++;
-                if (currentIndex < col1List.Count)
+                Debug.Log(GameStateManager.Instance.CurrentIndex);
+            // 否则前进到下一行
+                GameStateManager.Instance.add(1);
+                if (GameStateManager.Instance.CurrentIndex < col1List.Count)
                 {
-                    Debug.Log(currentIndex);
-                    naem.text = col2List[currentIndex];
-                    currentText = col3List[currentIndex];
+                    naem.text = col2List[GameStateManager.Instance.CurrentIndex];
+                    currentText = col3List[GameStateManager.Instance.CurrentIndex];
                     isTyping = true;
                     StartCoroutine(TypeText());
                 }
                 else
                 {
                     Debug.Log("已到最后一行，点击重置");
-                    currentIndex = -1;
+                    ;
                 }
             }
         }
@@ -118,7 +111,7 @@ public class Read : MonoBehaviour
             while (i < currentText.Length)
             {
                 dialog.text = currentText.Substring(0, (int)(i + 1));
-                i += typeSpeed * Time.deltaTime;
+                i += Constants.typeSpeed * Time.deltaTime;
                 yield return null;
             }
             dialog.text = currentText;
@@ -166,23 +159,23 @@ public class Read : MonoBehaviour
         }
         void OnSave()
         {
-            if (Click && currentIndex >= 0 && currentIndex < col1List.Count)
+            if (Constants.Click && GameStateManager.Instance.CurrentIndex >= 0 && GameStateManager.Instance.CurrentIndex < col1List.Count)
             {
-                Save_LoadManager.issave = true;
+                Constants.issave = true;
 
                 string time = System.DateTime.Now.ToString("yyyy-MM-dd-HH:mm");
                 string content = dialog.text;
-                string StringNumber = col1List[currentIndex];
+                string StringNumber = col1List[GameStateManager.Instance.CurrentIndex];
                 int number = int.Parse(StringNumber);
                 StartCoroutine(CaptureAndSave(number, time, content));
             }
         }
         void OnLoad()
         {
-            if (Click)
+            if (Constants.Click)
             {
-                Save_LoadManager.issave = false;
-                saveLoadManager.saveload(0, "", "", null);
+                Constants.issave = false;
+                saveLoadManager.saveload(0, null, null, null);
                 Debug.Log("点击了加载");
             }
         }
