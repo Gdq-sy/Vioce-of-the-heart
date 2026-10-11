@@ -25,7 +25,7 @@ public class menu : MonoBehaviour
         {
             Obload.SetActive(true);
         }
-        Save_LoadManager.issave = false;
+        Constants.issave = false;
     }
     private void Start()
     {

@@ -10,7 +10,7 @@ using UnityEngine.UI;
 
 public class Save_LoadManager : MonoBehaviour 
 {
-    public static bool issave;
+    
     // 待保存的数据（临时存储，等玩家选择存档位）
     private int pendingNumber;
     private string pendingTime;
@@ -46,7 +46,7 @@ public class Save_LoadManager : MonoBehaviour
 
     public void saveload(int number, string time, string dialog, byte[] screenshot)
     {
-        if (issave)
+        if (Constants.issave)
         {
             // 缓存待保存的数据，等待玩家选择存档槽位
             pendingNumber = number;
@@ -57,7 +57,7 @@ public class Save_LoadManager : MonoBehaviour
             Debug.Log("已缓存存档数据，等待选择存档槽位");
         }
         // 无论保存还是加载，都更新PanelText
-        PanelText.text = issave ? save : load;
+        PanelText.text = Constants.issave ? save : load;
     }
     //检测页码
     void Page(bool isnext)
@@ -91,12 +91,12 @@ public class Save_LoadManager : MonoBehaviour
         int index = (clickedPage - 1) * 9 + serial;
         Debug.Log($"点击了 {index} 号按钮");
 
-        if (issave && hasPendingSave)
+        if (Constants.issave && hasPendingSave)
         {
             Save(index, pendingTime, pendingDialog, pendingScreenshot);
             hasPendingSave = false;
         }
-        else if (!issave)
+        else if (!Constants.issave)
         {
             Load(index);
         }
@@ -105,7 +105,7 @@ public class Save_LoadManager : MonoBehaviour
     //更新所有按钮的显示
     void UpdateSaveLoadButtons()
     {
-        PanelText.text = issave ? save : load;
+        PanelText.text = Constants.issave ? save : load;
         for (int i = 0; i < SaveLoadButtons.Length; i++)
         {
             int index = (page - 1) * SaveLoadButtons.Length + i + 1;
@@ -220,7 +220,7 @@ public class Save_LoadManager : MonoBehaviour
             string jsonData = File.ReadAllText(dataPath);
             int number = ExtractJsonInt(jsonData, "number");
             SceneManager.LoadScene(1);
-            Read.currentIndex = number - 1;
+            GameStateManager.Instance.relode(number);
             Debug.Log($"读取存档数据: {jsonData}");
         }
     }
