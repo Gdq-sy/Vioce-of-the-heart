@@ -4575,6 +4575,7 @@ GameObject:
   - component: {fileID: 685107636}
   - component: {fileID: 685107638}
   - component: {fileID: 685107637}
+  - component: {fileID: 685107639}
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: Text_Image
@@ -4648,6 +4649,21 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 685107635}
   m_CullTransparentMesh: 1
+--- !u!114 &685107639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 685107635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63afe6de887b35a498875727053deaa4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  dialogText: {fileID: 732568175}
+  <IsTyping>k__BackingField: 0
+  fullText: 
 --- !u!1 &726664513
 GameObject:
   m_ObjectHideFlags: 0
@@ -7192,6 +7208,7 @@ GameObject:
   - component: {fileID: 1389422497}
   - component: {fileID: 1389422496}
   - component: {fileID: 1389422498}
+  - component: {fileID: 1389422499}
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: Background
@@ -7269,19 +7286,40 @@ MonoBehaviour:
   m_GameObject: {fileID: 1389422494}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5e3731d3fce09b49ba750d9da206d67, type: 3}
+  m_Script: {fileID: 11500000, guid: ea74de92b65a5ce4091f789806caa090, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   csvFile: {fileID: 4900000, guid: 8d63e1db7edba1f4da7735397385ffc3, type: 3}
+  nameText: {fileID: 36609838}
+  dialoguePanel: {fileID: 685107635}
+  typewriter: {fileID: 685107639}
+  audioManager: {fileID: 0}
+  imageController: {fileID: 0}
+  nodes: []
+  currentIndex: 0
+--- !u!114 &1389422499
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1389422494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d5e3731d3fce09b49ba750d9da206d67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
   naem: {fileID: 36609838}
   dialog: {fileID: 732568175}
   targetObject: {fileID: 685107635}
   save: {fileID: 1605703641}
   load: {fileID: 1472486222}
   saveLoadManager: {fileID: 116150319}
+  csvFile: {fileID: 4900000, guid: 8d63e1db7edba1f4da7735397385ffc3, type: 3}
+  presenter: {fileID: 0}
   Background: {fileID: 1389422496}
-  Character1: {fileID: 207505379}
-  Character2: {fileID: 1869138094}
+  Character1: {fileID: 0}
+  Character2: {fileID: 0}
   BackgroundMusic: {fileID: 0}
   CharacterAudio1: {fileID: 0}
   CharacterAudio2: {fileID: 0}
@@ -8812,6 +8850,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1668531911}
   - component: {fileID: 1668531912}
+  - component: {fileID: 1668531914}
+  - component: {fileID: 1668531913}
   m_Layer: 5
   m_HasEditorInfo: 1
   m_Name: GameManager
@@ -8852,6 +8892,36 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentIndex: 0
+--- !u!114 &1668531913
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668531910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b95a96ef49bb2594caabae5b5e82801c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  background: {fileID: 1389422496}
+  character1: {fileID: 207505379}
+  character2: {fileID: 1869138094}
+  fadeDuration: 0.3
+  backgroundbackfix: /Backgrounds
+  characterbackfix: /Characters
+--- !u!114 &1668531914
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668531910}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 07bbb91cb4e517542926b7f79b75956d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1676477780
 GameObject:
   m_ObjectHideFlags: 0
@@ -10315,7 +10385,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1869138093
 RectTransform:
   m_ObjectHideFlags: 0

@@ -35,7 +35,7 @@ public class GameStateManager : MonoBehaviour
 
     public void Reload(int index)
     {
-        SceneManager.LoadScene(1);
         CurrentIndex = index - 1;
+        SceneManager.LoadScene(1);
     }
 }
