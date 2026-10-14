@@ -1,21 +1,27 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class Read : MonoBehaviour
 {
-    public TextAsset csvFile;
+    [Header("UI 引用")]
     public Text naem;
     public Text dialog;
     public GameObject targetObject;
+
+    [Header("存档相关")]
     public Button save;
     public Button load;
     public Save_LoadManager saveLoadManager;
+
+    [Header("数据源")]
+    public TextAsset csvFile;
+
+    [Header("表现层")]
+    public ScenePresenter presenter;
+
+    // 以下字段当前逻辑未使用，保留以免场景引用丢失
+    [Header("备用资源引用")]
     public Image Background;
     public Image Character1;
     public Image Character2;
@@ -23,43 +29,40 @@ public class Read : MonoBehaviour
     public AudioSource CharacterAudio1;
     public AudioSource CharacterAudio2;
 
-    private int n = 0;
+    private readonly DialogueData data = new DialogueData();
+    private Typewriter typewriter;
 
-    private List<string> col1List = new List<string>();
-    private List<string> col2List = new List<string>();
-    private List<string> col3List = new List<string>();
-    private List<string> col4List = new List<string>();
-    private List<string> col5List = new List<string>();
-    private List<string> col6List = new List<string>();
-    private List<string> col7List = new List<string>();
-
-    // 打字机状态
-    private bool isTyping = false;
-    private string currentText = "";
+    // 旧代码中的 n：文本框被隐藏时的点击缓冲
+    private int hiddenClickBuffer = 0;
 
     void Start()
     {
-        ReadCSV();
+        typewriter = new Typewriter(this, dialog);
+
+        data.Load(csvFile);
+
         save.onClick.AddListener(OnSave);
         load.onClick.AddListener(OnLoad);
         Constants.Click = true;
-        if (GameStateManager.Instance.CurrentIndex >= 0 && GameStateManager.Instance.CurrentIndex < col1List.Count)
+
+        int index = GameStateManager.Instance.CurrentIndex;
+        if (data.HasIndex(index))
         {
             targetObject.SetActive(true);
-            naem.text = col2List[GameStateManager.Instance.CurrentIndex];
-            currentText = col3List[GameStateManager.Instance.CurrentIndex];
-            isTyping = true;
-            StartCoroutine(TypeText());
+            ShowLine(index);
         }
     }
+
     void Update()
     {
-        IsTypes();
-
+        HandleClick();
     }
-    //打字判断
-    void IsTypes()
+
+    // ---------- 输入处理 ----------
+
+    void HandleClick()
     {
+        // Open / Exit 按钮点击时用来屏蔽本次“推进对话”
         if (Open.BlockNextClick)
         {
             Open.BlockNextClick = false;
@@ -72,116 +75,94 @@ public class Read : MonoBehaviour
             Constants.Click = true;
             return;
         }
-        if (Input.GetMouseButtonUp(0) && Constants.Click)
+
+        if (!Input.GetMouseButtonUp(0) || !Constants.Click) return;
+
+        // 文本框被隐藏时，点击只负责恢复显示
+        if (!targetObject.activeSelf)
         {
-            //检查文本框是否被隐藏
-            if (targetObject.activeSelf == false)
+            hiddenClickBuffer++;
+            if (hiddenClickBuffer >= 1)
             {
-                n++;
-                if (n >= 1)
-                {
-                    targetObject.SetActive(true); // 显示文本框
-                    n = 0;
-                }
-                return;
+                targetObject.SetActive(true);
+                hiddenClickBuffer = 0;
             }
-            // 如果正在打字，立即完成
-            if (isTyping)
-            {
-                StopAllCoroutines();
-                dialog.text = currentText;
-                isTyping = false;
-                return;
-            }
-            Debug.Log(GameStateManager.Instance.CurrentIndex);
-            // 否则前进到下一行
-            GameStateManager.Instance.add(1);
-            if (GameStateManager.Instance.CurrentIndex < col1List.Count)
-            {
-                naem.text = col2List[GameStateManager.Instance.CurrentIndex];
-                currentText = col3List[GameStateManager.Instance.CurrentIndex];
-                isTyping = true;
-                StartCoroutine(TypeText());
-            }
-            else
-            {
-                Debug.Log("已到最后一行，点击重置");
-            }
-        }
-    }
-    // 打字机协程
-    IEnumerator TypeText()
-    {
-        float i = 0;
-        while (i < currentText.Length)
-        {
-            dialog.text = currentText.Substring(0, (int)(i + 1));
-            i += Constants.typeSpeed * Time.deltaTime;
-            yield return null;
-        }
-        dialog.text = currentText;
-        isTyping = false;
-    }
-    void ReadCSV()
-    {
-        if (csvFile == null)
-        {
-            Debug.LogError("CSV file not assigned!");
             return;
         }
 
-        string[] lines = csvFile.text.Split('\n');
-
-        for (int i = 1; i < lines.Length; i++)
+        // 正在打字：点击立刻补全
+        if (typewriter.IsTyping)
         {
-            string line = lines[i].Trim();
-            if (string.IsNullOrEmpty(line)) continue;
+            typewriter.Complete();
+            return;
+        }
 
-            string[] columns = line.Split(',');
-            if (columns.Length >= 7)
-            {
-                col1List.Add(columns[0].Trim());
-                col2List.Add(columns[1].Trim());
-                col3List.Add(columns[2].Trim());
-                col4List.Add(columns[3].Trim());
-                col5List.Add(columns[4].Trim());
-                col6List.Add(columns[5].Trim());
-                col7List.Add(columns[6].Trim());
-            }
+        // 否则推进到下一行
+        AdvanceLine();
+    }
+
+    void AdvanceLine()
+    {
+        Debug.Log(GameStateManager.Instance.CurrentIndex);
+
+        GameStateManager.Instance.add(1);
+
+        int index = GameStateManager.Instance.CurrentIndex;
+        if (data.HasIndex(index))
+        {
+            ShowLine(index);
+        }
+        else
+        {
+            Debug.Log("已到最后一行，点击重置");
         }
     }
+
+    void ShowLine(int index)
+    {
+        DialogueRow row = data.GetRow(index);
+        naem.text = row.Name;
+        if (presenter != null) presenter.Apply(row);
+        typewriter.Play(row.Dialog);
+    }
+
+    // ---------- 存档 / 读档 ----------
+
     IEnumerator CaptureAndSave(int number, string time, string content)
     {
         targetObject.SetActive(false);
         yield return new WaitForEndOfFrame();
+
         Texture2D screenshot = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
         screenshot.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
         screenshot.Apply();
         byte[] bytes = screenshot.EncodeToPNG();
         Destroy(screenshot);
+
         targetObject.SetActive(true);
         saveLoadManager.saveload(number, time, content, bytes);
     }
+
     void OnSave()
     {
-        if (Constants.Click && GameStateManager.Instance.CurrentIndex >= 0 && GameStateManager.Instance.CurrentIndex < col1List.Count)
-        {
-            Constants.issave = true;
+        int index = GameStateManager.Instance.CurrentIndex;
+        if (!Constants.Click || !data.HasIndex(index)) return;
 
-            string time = System.DateTime.Now.ToString("yyyy-MM-dd-HH:mm");
-            string content = dialog.text;
-            string StringNumber = col1List[GameStateManager.Instance.CurrentIndex];
-            int number = int.Parse(StringNumber);
-            StartCoroutine(CaptureAndSave(number, time, content));
-        }
+        Constants.issave = true;
+
+        string time = System.DateTime.Now.ToString("yyyy-MM-dd-HH:mm");
+        string content = dialog.text;
+        int number = data.GetNumberInt(index);
+
+        StartCoroutine(CaptureAndSave(number, time, content));
     }
+
     void OnLoad()
     {
-        if (Constants.Click)
-        {
-            Constants.issave = false;
-            saveLoadManager.saveload(0, null, null, null);
-            Debug.Log("点击了加载");
-        }
+        if (!Constants.Click) return;
+
+        Constants.issave = false;
+        saveLoadManager.saveload(0, null, null, null);
+        Debug.Log("点击了加载");
     }
 }

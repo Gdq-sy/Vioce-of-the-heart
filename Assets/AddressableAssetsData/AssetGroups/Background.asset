@@ -18,14 +18,16 @@ MonoBehaviour:
   m_GUID: be9c77ecbe21ed84db83ad35f1080312
   m_SerializeEntries:
   - m_GUID: 73cfbdce8253e0e4db0c562619984b33
-    m_Address: Assets/Image/Background/classroom.jpg
+    m_Address: classroom
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Background
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1bcd9c3c5185124fae98e25eb2cb888
-    m_Address: Assets/Image/Background/alley.jpg
+    m_Address: alley
     m_ReadOnly: 0
-    m_SerializedLabels: []
+    m_SerializedLabels:
+    - Background
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4dbc959f71d68df419e5bf8574cf7655, type: 2}
