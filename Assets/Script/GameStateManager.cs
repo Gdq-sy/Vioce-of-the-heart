@@ -7,9 +7,10 @@ using UnityEngine.SceneManagement;
 public class GameStateManager : MonoBehaviour
 {
     public static GameStateManager Instance { get; private set; }
+
     void Awake()
     {
-        if (Instance != null&& Instance != this)
+        if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
             return;
@@ -17,18 +18,24 @@ public class GameStateManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
+
     [SerializeField] private int currentIndex = 0;
 
+    //改成可读可写
+    public int CurrentIndex
+    {
+        get { return currentIndex; }
+        set { currentIndex = Mathf.Max(0, value); }  // 防止负数
+    }
 
-    public int CurrentIndex => currentIndex;
-    
     public void add(int index)
     {
-        currentIndex += index;
+        CurrentIndex += index;   // 走 setter，自动校验
     }
-    public void relode(int index)
+
+    public void Reload(int index)
     {
         SceneManager.LoadScene(1);
-        currentIndex = index - 1;
+        CurrentIndex = index - 1;
     }
 }

@@ -7212,8 +7212,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1869138093}
   - {fileID: 207505378}
+  - {fileID: 1869138093}
   - {fileID: 685107636}
   m_Father: {fileID: 1091748121}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -7279,6 +7279,12 @@ MonoBehaviour:
   save: {fileID: 1605703641}
   load: {fileID: 1472486222}
   saveLoadManager: {fileID: 116150319}
+  Background: {fileID: 1389422496}
+  Character1: {fileID: 207505379}
+  Character2: {fileID: 1869138094}
+  BackgroundMusic: {fileID: 0}
+  CharacterAudio1: {fileID: 0}
+  CharacterAudio2: {fileID: 0}
 --- !u!1 &1397624736
 GameObject:
   m_ObjectHideFlags: 0
