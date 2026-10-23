@@ -15,7 +15,7 @@ MonoBehaviour:
   m_DefaultGroup: afeb44f986873b940adb4a0f08377bde
   m_currentHash:
     serializedVersion: 2
-    Hash: a51de44f1c0ab49b72d32d8552161120
+    Hash: b8ca5e402ade5339b58241aa54c19c62
   m_OptimizeCatalogSize: 0
   m_BuildRemoteCatalog: 0
   m_BundleLocalCatalog: 0
@@ -94,7 +94,7 @@ MonoBehaviour:
   m_LabelTable:
     m_LabelNames:
     - default
-    - Background
+    - Backgrounds
     - Characters
   m_SchemaTemplates: []
   m_GroupTemplateObjects:
