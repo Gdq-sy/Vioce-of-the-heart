@@ -17,8 +17,17 @@ public class Read : MonoBehaviour
     [Header("数据源")]
     public TextAsset csvFile;
 
-    [Header("表现层")]
-    public ScenePresenter presenter;
+    private ScenePresenter Presenter
+    {
+        get
+        {
+            if (ScenePresenter.instance == null)
+            {
+                Debug.LogError("找不到 ScenePresenter 实例！");
+            }
+            return ScenePresenter.instance;
+        }
+    }
 
     // 以下字段当前逻辑未使用，保留以免场景引用丢失
     [Header("备用资源引用")]
@@ -122,7 +131,7 @@ public class Read : MonoBehaviour
     {
         DialogueRow row = data.GetRow(index);
         naem.text = row.Name;
-        if (presenter != null) presenter.Apply(row);
+        ScenePresenter.instance.Apply(row);
         typewriter.Play(row.Dialog);
     }
 
@@ -160,7 +169,6 @@ public class Read : MonoBehaviour
     void OnLoad()
     {
         if (!Constants.Click) return;
-
         Constants.issave = false;
         saveLoadManager.saveload(0, null, null, null);
         Debug.Log("点击了加载");

@@ -51,7 +51,6 @@ public class DialogueData
             row.Character1 = columns[4].Trim();
             row.Character2 = columns[5].Trim();
             row.Effect = columns[6].Trim();
-
             rows.Add(row);
         }
     }

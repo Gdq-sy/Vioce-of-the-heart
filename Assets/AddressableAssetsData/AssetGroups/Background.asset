@@ -21,13 +21,13 @@ MonoBehaviour:
     m_Address: classroom
     m_ReadOnly: 0
     m_SerializedLabels:
-    - Background
+    - Backgrounds
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1bcd9c3c5185124fae98e25eb2cb888
     m_Address: alley
     m_ReadOnly: 0
     m_SerializedLabels:
-    - Background
+    - Backgrounds
     FlaggedDuringContentUpdateRestriction: 0
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4dbc959f71d68df419e5bf8574cf7655, type: 2}

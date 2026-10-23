@@ -16,12 +16,7 @@ MonoBehaviour:
   m_Data:
     m_SerializedData: []
   m_GUID: afeb44f986873b940adb4a0f08377bde
-  m_SerializeEntries:
-  - m_GUID: 8d63e1db7edba1f4da7735397385ffc3
-    m_Address: Assets/Text/scene1.csv
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
+  m_SerializeEntries: []
   m_ReadOnly: 0
   m_Settings: {fileID: 11400000, guid: 4dbc959f71d68df419e5bf8574cf7655, type: 2}
   m_SchemaSet:

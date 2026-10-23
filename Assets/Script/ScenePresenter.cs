@@ -1,11 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement; // 引入场景管理命名空间
 
-/// <summary>
-/// 表现层：负责背景、立绘、动画的显示。
-/// 只通过 AssetService 拿 Sprite，不直接接触 Addressables。
-/// </summary>
 public class ScenePresenter : MonoBehaviour
 {
     [Header("UI 引用")]
@@ -16,29 +13,91 @@ public class ScenePresenter : MonoBehaviour
     [Header("动画参数")]
     public float fadeDuration = 0.3f;
 
-    [Header("Addressables 地址后缀")]
-    public string backgroundbackfix = "/Backgrounds";
-    public string characterbackfix = "/Characters";
-
     private class Channel
     {
         public Image image;
         public Coroutine routine;
-        public string current = "";  // 当前显示的资源名；"" 表示隐藏
-        public int requestId = 0;    // 请求版本号，用于丢弃过期请求
+        public string current = "";
+        public int requestId = 0;
     }
 
     private Channel bgChannel;
     private Channel char1Channel;
     private Channel char2Channel;
 
+    // 保证常驻单例，防止多次加载场景导致出现多个 ScenePresenter 报错
+    public static ScenePresenter instance;
+
     void Awake()
     {
+        if (instance != null && instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        instance = this;
+        DontDestroyOnLoad(gameObject);
+
+        // 注册场景加载完成事件
+        SceneManager.sceneLoaded += OnSceneLoaded;
+
         bgChannel = new Channel { image = background };
         char1Channel = new Channel { image = character1 };
         char2Channel = new Channel { image = character2 };
 
-        // 初始隐藏立绘，避免出现空白框
+        HideCharacters();
+    }
+
+    void OnDestroy()
+    {
+        // 销毁时取消注册，防止内存泄漏
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    // 当新场景加载完成时触发
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Debug.Log($"新场景加载完成：{scene.name}，正在重新绑定 UI...");
+
+        // 重新寻找当前场景中的 Canvas (假设你的UI都在 Canvas 下)
+        Canvas canvas = FindObjectOfType<Canvas>();
+        if (canvas != null)
+        {
+            // 注意：这里的 "Background", "Character1" 必须和 Hierarchy 里的节点名字完全一致
+            Transform bgTr = canvas.transform.Find("Background");
+            if (bgTr != null)
+            {
+                background = bgTr.GetComponent<Image>();
+
+                // 2. 再在 Background 下面找 Character1 和 Character2
+                Transform c1Tr = bgTr.Find("Left");
+                if (c1Tr != null) character1 = c1Tr.GetComponent<Image>();
+
+                Transform c2Tr = bgTr.Find("Right");
+                if (c2Tr != null) character2 = c2Tr.GetComponent<Image>();
+            }
+            else
+            {
+                Debug.LogError("在 Canvas 下没有找到名为 'Background' 的节点！");
+            }
+        }
+        else
+        {
+            Debug.LogError("新场景中没有找到 Canvas！请检查 UI 是否放在了 Canvas 下。");
+        }
+
+        // 关键：必须同步更新 Channel 里的 Image 引用，否则协程还是会去操作旧物体
+        if (bgChannel != null) bgChannel.image = background;
+        if (char1Channel != null) char1Channel.image = character1;
+        if (char2Channel != null) char2Channel.image = character2;
+
+        // 重新绑定后，隐藏立绘并清空当前状态，等待剧情指令
+        HideCharacters();
+        if (bgChannel != null) bgChannel.current = "";
+    }
+
+    private void HideCharacters()
+    {
         if (character1 != null) character1.gameObject.SetActive(false);
         if (character2 != null) character2.gameObject.SetActive(false);
     }
@@ -47,6 +106,9 @@ public class ScenePresenter : MonoBehaviour
 
     public void Apply(DialogueRow row)
     {
+        // 如果引用为空（可能场景刚切还没绑定好），直接返回
+        if (background == null) return;
+
         ApplyBackground(row.Background);
         ApplyCharacter(char1Channel, row.Character1);
         ApplyCharacter(char2Channel, row.Character2);
@@ -57,12 +119,12 @@ public class ScenePresenter : MonoBehaviour
 
     void ApplyBackground(string name)
     {
-        if (string.IsNullOrEmpty(name)) return;    // 空 = 不变
-        if (name == bgChannel.current) return;     // 同名 = 不重切
+        if (string.IsNullOrEmpty(name)) return;
+        if (name == bgChannel.current) return;
 
         bgChannel.current = name;
         int rid = ++bgChannel.requestId;
-        RestartRoutine(bgChannel, BackgroundFlow(name , rid));//+ backgroundbackfix
+        RestartRoutine(bgChannel, BackgroundFlow(name, rid));
     }
 
     IEnumerator BackgroundFlow(string key, int rid)
@@ -70,8 +132,11 @@ public class ScenePresenter : MonoBehaviour
         Sprite s = null;
         yield return AssetService.Instance.LoadSprite(key, r => s = r);
 
-        if (rid != bgChannel.requestId) yield break;  // 已被新请求取代
+        if (rid != bgChannel.requestId) yield break;
         if (s == null) yield break;
+
+        // 增加安全判空
+        if (bgChannel.image == null) yield break;
 
         yield return FadeInImage(bgChannel.image, s, fadeDuration);
     }
@@ -80,9 +145,9 @@ public class ScenePresenter : MonoBehaviour
 
     void ApplyCharacter(Channel ch, string name)
     {
-        if (string.IsNullOrEmpty(name)) return;   // 空 = 不变
+        if (string.IsNullOrEmpty(name)) return;
 
-        if (name == "#")                          // "#" = 隐藏
+        if (name == "#")
         {
             if (ch.current == "") return;
             ch.current = "";
@@ -95,7 +160,7 @@ public class ScenePresenter : MonoBehaviour
 
         ch.current = name;
         int rid = ++ch.requestId;
-        RestartRoutine(ch, CharacterFlow(ch, name, rid));// + characterbackfix
+        RestartRoutine(ch, CharacterFlow(ch, name, rid));
     }
 
     IEnumerator CharacterFlow(Channel ch, string key, int rid)
@@ -106,11 +171,15 @@ public class ScenePresenter : MonoBehaviour
         if (rid != ch.requestId) yield break;
         if (s == null) yield break;
 
+        // 增加安全判空
+        if (ch.image == null) yield break;
+
         yield return FadeInImage(ch.image, s, fadeDuration);
     }
 
     IEnumerator HideCharacterFlow(Channel ch, int rid)
     {
+        if (ch.image == null) yield break;
         yield return FadeOutImage(ch.image, fadeDuration);
     }
 
@@ -120,14 +189,15 @@ public class ScenePresenter : MonoBehaviour
     {
         if (string.IsNullOrEmpty(effect)) return;
 
-        if (effect == "shake1" && character1.gameObject.activeSelf)
+        if (effect == "shake1" && character1 != null && character1.gameObject.activeSelf)
             StartCoroutine(Shake(character1.rectTransform, 0.3f, 12f));
-        else if (effect == "shake2" && character2.gameObject.activeSelf)
+        else if (effect == "shake2" && character2 != null && character2.gameObject.activeSelf)
             StartCoroutine(Shake(character2.rectTransform, 0.3f, 12f));
     }
 
     IEnumerator Shake(RectTransform rt, float duration, float magnitude)
     {
+        if (rt == null) yield break;
         Vector2 origin = rt.anchoredPosition;
         float t = 0f;
         while (t < duration)
@@ -144,6 +214,8 @@ public class ScenePresenter : MonoBehaviour
 
     IEnumerator FadeInImage(Image img, Sprite sprite, float duration)
     {
+        if (img == null) yield break; // 极关键：防止在淡入时物体被销毁导致报错
+
         img.sprite = sprite;
         img.gameObject.SetActive(true);
 
@@ -155,27 +227,34 @@ public class ScenePresenter : MonoBehaviour
         while (t < duration)
         {
             t += Time.deltaTime;
+            if (img == null) yield break; // 循环中也要判空
             c.a = Mathf.Clamp01(t / duration);
             img.color = c;
             yield return null;
         }
-        c.a = 1f;
-        img.color = c;
+        if (img != null)
+        {
+            c.a = 1f;
+            img.color = c;
+        }
     }
 
     IEnumerator FadeOutImage(Image img, float duration)
     {
+        if (img == null) yield break;
+
         Color c = img.color;
         float start = c.a;
         float t = 0f;
         while (t < duration)
         {
             t += Time.deltaTime;
+            if (img == null) yield break; // 循环中判空
             c.a = Mathf.Lerp(start, 0f, t / duration);
             img.color = c;
             yield return null;
         }
-        img.gameObject.SetActive(false);
+        if (img != null) img.gameObject.SetActive(false);
     }
 
     // ---------- 工具 ----------
