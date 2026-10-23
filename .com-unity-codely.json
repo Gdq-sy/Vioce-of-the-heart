@@ -1,10 +1,10 @@
 {
-  "unity_port": 52583,
-  "stream_port": 52616,
+  "unity_port": -1,
+  "stream_port": 56827,
   "created_date": "2026-10-11T07:51:32.466Z",
   "project_path": "D:/unity/code/Vioce of the heart/Assets",
   "reloading": false,
-  "reason": "ready",
-  "seq": 25455,
-  "last_heartbeat": "2026-10-23T08:37:14.814Z"
+  "reason": "unity_quit",
+  "seq": 10912,
+  "last_heartbeat": "2026-10-23T10:11:13.764Z"
 }

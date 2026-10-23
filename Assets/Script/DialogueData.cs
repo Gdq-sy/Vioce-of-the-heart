@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -23,6 +24,33 @@ public class DialogueData
 
     /// <summary>把编号列转成 int，供存档用。</summary>
     public int GetNumberInt(int index) => int.Parse(rows[index].Number);
+
+    /// <summary>
+    /// 返回第 index 行，但 Background / Character1 / Character2 三个字段
+    /// 如果为空，会向上回溯到最近一个非空值（"#" 算非空，会命中）。
+    /// 其余字段（Name / Dialog / Effect）保持原行不变。
+    /// </summary>
+    public DialogueRow GetRowWithInheritedVisuals(int index)
+    {
+        if (!HasIndex(index)) return default;
+
+        DialogueRow row = rows[index];
+        row.Background = FindLastNonEmpty(index, r => r.Background);
+        row.Character1 = FindLastNonEmpty(index, r => r.Character1);
+        row.Character2 = FindLastNonEmpty(index, r => r.Character2);
+        return row;
+    }
+
+    // 从 index 向上找第一个非空值；"#" 视为有效值，命中即停。找不到返回 ""。
+    private string FindLastNonEmpty(int index, Func<DialogueRow, string> selector)
+    {
+        for (int i = index; i >= 0; i--)
+        {
+            string v = selector(rows[i]);
+            if (!string.IsNullOrEmpty(v)) return v;
+        }
+        return "";
+    }
 
     public void Load(TextAsset csvFile)
     {

@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement; // 引入场景管理命名空间
+using UnityEngine.SceneManagement;
 
 public class ScenePresenter : MonoBehaviour
 {
@@ -48,18 +48,12 @@ public class ScenePresenter : MonoBehaviour
         HideCharacters();
     }
 
-    void OnDestroy()
-    {
-        // 销毁时取消注册，防止内存泄漏
-        SceneManager.sceneLoaded -= OnSceneLoaded;
-    }
-
     // 当新场景加载完成时触发
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         Debug.Log($"新场景加载完成：{scene.name}，正在重新绑定 UI...");
 
-        // 重新寻找当前场景中的 Canvas (假设你的UI都在 Canvas 下)
+        // 重新寻找当前场景中的 Canvas
         Canvas canvas = FindObjectOfType<Canvas>();
         if (canvas != null)
         {
@@ -69,22 +63,14 @@ public class ScenePresenter : MonoBehaviour
             {
                 background = bgTr.GetComponent<Image>();
 
-                // 2. 再在 Background 下面找 Character1 和 Character2
                 Transform c1Tr = bgTr.Find("Left");
                 if (c1Tr != null) character1 = c1Tr.GetComponent<Image>();
 
                 Transform c2Tr = bgTr.Find("Right");
                 if (c2Tr != null) character2 = c2Tr.GetComponent<Image>();
             }
-            else
-            {
-                Debug.LogError("在 Canvas 下没有找到名为 'Background' 的节点！");
-            }
         }
-        else
-        {
-            Debug.LogError("新场景中没有找到 Canvas！请检查 UI 是否放在了 Canvas 下。");
-        }
+
 
         // 关键：必须同步更新 Channel 里的 Image 引用，否则协程还是会去操作旧物体
         if (bgChannel != null) bgChannel.image = background;

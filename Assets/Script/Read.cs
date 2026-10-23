@@ -17,18 +17,6 @@ public class Read : MonoBehaviour
     [Header("数据源")]
     public TextAsset csvFile;
 
-    private ScenePresenter Presenter
-    {
-        get
-        {
-            if (ScenePresenter.instance == null)
-            {
-                Debug.LogError("找不到 ScenePresenter 实例！");
-            }
-            return ScenePresenter.instance;
-        }
-    }
-
     // 以下字段当前逻辑未使用，保留以免场景引用丢失
     [Header("备用资源引用")]
     public Image Background;
@@ -131,7 +119,9 @@ public class Read : MonoBehaviour
     {
         DialogueRow row = data.GetRow(index);
         naem.text = row.Name;
-        ScenePresenter.instance.Apply(row);
+        //ScenePresenter.instance.Apply(row);
+        // 改成一行
+        ScenePresenter.instance.Apply(data.GetRowWithInheritedVisuals(index));
         typewriter.Play(row.Dialog);
     }
 
