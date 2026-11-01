@@ -8,6 +8,9 @@ public class Read : MonoBehaviour
     public Text naem;
     public Text dialog;
     public GameObject targetObject;
+    [Header("自动和跳过")]
+    public Button auto;
+    public Button skip;
 
     [Header("存档相关")]
     public Button save;
@@ -29,7 +32,6 @@ public class Read : MonoBehaviour
     private readonly DialogueData data = new DialogueData();
     private Typewriter typewriter;
 
-    // 旧代码中的 n：文本框被隐藏时的点击缓冲
     private int hiddenClickBuffer = 0;
 
     void Start()
@@ -40,6 +42,8 @@ public class Read : MonoBehaviour
 
         save.onClick.AddListener(OnSave);
         load.onClick.AddListener(OnLoad);
+        auto.onClick.AddListener(OnAuto);
+        skip.onClick.AddListener(OnSkip);
         Constants.Click = true;
 
         int index = GameStateManager.Instance.CurrentIndex;
@@ -162,5 +166,13 @@ public class Read : MonoBehaviour
         Constants.issave = false;
         saveLoadManager.saveload(0, null, null, null);
         Debug.Log("点击了加载");
+    }
+    void OnAuto()
+    { 
+    
+    }
+    void OnSkip()
+    { 
+    
     }
 }
