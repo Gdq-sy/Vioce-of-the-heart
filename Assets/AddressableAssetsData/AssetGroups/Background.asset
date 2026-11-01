@@ -20,8 +20,7 @@ MonoBehaviour:
   - m_GUID: 73cfbdce8253e0e4db0c562619984b33
     m_Address: classroom
     m_ReadOnly: 0
-    m_SerializedLabels:
-    - Backgrounds
+    m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0
   - m_GUID: a1bcd9c3c5185124fae98e25eb2cb888
     m_Address: alley

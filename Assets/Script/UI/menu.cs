@@ -15,26 +15,32 @@ public class menu : MonoBehaviour
     public Button set;
     public GameObject Obset;
 
-    void begin()
-    {
-        SceneManager.LoadScene(1);
-    }
-    void Load()
-    {
-        if(Obload != null)
-        {
-            Obload.SetActive(true);
-        }
-        Constants.issave = false;
-    }
     private void Start()
     {
         start.onClick.AddListener(begin);
         load.onClick.AddListener(Load);
+        exit.onClick.AddListener(Exit);
     }
     // Update is called once per frame
     void Update()
     {
         
+    }
+    private void begin()
+    {
+        GameStateManager.Instance.Reload(1);
+        SceneManager.LoadScene(1);
+    }
+    private void Load()
+    {
+        if (Obload != null)
+        {
+            Obload.SetActive(true);
+        }
+        Constants.issave = false;
+    }
+    private  void Exit()
+    {
+        Application.Quit();
     }
 }

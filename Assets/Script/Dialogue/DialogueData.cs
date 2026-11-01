@@ -11,6 +11,8 @@ public struct DialogueRow
     public string Character1;
     public string Character2;
     public string Effect;
+    public string Bgm;
+    public string Audio;
 }
 
 public class DialogueData
@@ -24,6 +26,19 @@ public class DialogueData
 
     /// <summary>把编号列转成 int，供存档用。</summary>
     public int GetNumberInt(int index) => int.Parse(rows[index].Number);
+
+    /// <summary>
+    /// 从 fromIndex（含）开始，向后找第一个“背景图片”列非空的原始行；找不到返回 -1。
+    /// 供跳过功能使用（用原始行而非继承合并后的行，否则每行都有背景）。
+    /// </summary>
+    public int FindNextBackgroundIndex(int fromIndex)
+    {
+        for (int i = Mathf.Max(0, fromIndex); i < rows.Count; i++)
+        {
+            if (!string.IsNullOrEmpty(rows[i].Background)) return i;
+        }
+        return -1;
+    }
 
     /// <summary>
     /// 返回第 index 行，但 Background / Character1 / Character2 三个字段
@@ -79,7 +94,13 @@ public class DialogueData
             row.Character1 = columns[4].Trim();
             row.Character2 = columns[5].Trim();
             row.Effect = columns[6].Trim();
+            row.Bgm = GetCol(columns, 7);
+            row.Audio = GetCol(columns, 8);
             rows.Add(row);
         }
     }
+
+    static string GetCol(string[] columns, int index)
+        => index < columns.Length ? columns[index].Trim() : "";
+
 }

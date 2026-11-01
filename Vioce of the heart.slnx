@@ -1,6 +1,3 @@
 ﻿<Solution>
-  <Project Path="tjgenerators.Editor.csproj" />
-  <Project Path="UnityTcp.CustomTool.csproj" />
   <Project Path="Assembly-CSharp.csproj" />
-  <Project Path="TJGenerators.Runtime.csproj" />
 </Solution>

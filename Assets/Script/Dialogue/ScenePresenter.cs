@@ -25,6 +25,10 @@ public class ScenePresenter : MonoBehaviour
     private Channel char1Channel;
     private Channel char2Channel;
 
+    // 正在运行的特效协程与最新一次特效的请求 id（供 IsAnimating 判断）
+    private Coroutine effectRoutine;
+    private int effectRequestId = 0;
+
     // 保证常驻单例，防止多次加载场景导致出现多个 ScenePresenter 报错
     public static ScenePresenter instance;
 
@@ -48,11 +52,19 @@ public class ScenePresenter : MonoBehaviour
         HideCharacters();
     }
 
+    /// <summary>
+    /// 背景 / 立绘 / 特效的协程是否仍在运行（含 Addressables 加载耗时）。
+    /// 自动播放用它判断“动画效果是否全部结束”。
+    /// </summary>
+    public bool IsAnimating =>
+        IsChannelBusy(bgChannel) || IsChannelBusy(char1Channel) || IsChannelBusy(char2Channel)
+        || effectRoutine != null;
+
+    static bool IsChannelBusy(Channel ch) => ch != null && ch.routine != null;
+
     // 当新场景加载完成时触发
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        Debug.Log($"新场景加载完成：{scene.name}，正在重新绑定 UI...");
-
         // 重新寻找当前场景中的 Canvas
         Canvas canvas = FindObjectOfType<Canvas>();
         if (canvas != null)
@@ -175,13 +187,14 @@ public class ScenePresenter : MonoBehaviour
     {
         if (string.IsNullOrEmpty(effect)) return;
 
+        int rid = ++effectRequestId;
         if (effect == "shake1" && character1 != null && character1.gameObject.activeSelf)
-            StartCoroutine(Shake(character1.rectTransform, 0.3f, 12f));
+            effectRoutine = StartCoroutine(Shake(character1.rectTransform, 0.3f, 12f, rid));
         else if (effect == "shake2" && character2 != null && character2.gameObject.activeSelf)
-            StartCoroutine(Shake(character2.rectTransform, 0.3f, 12f));
+            effectRoutine = StartCoroutine(Shake(character2.rectTransform, 0.3f, 12f, rid));
     }
 
-    IEnumerator Shake(RectTransform rt, float duration, float magnitude)
+    IEnumerator Shake(RectTransform rt, float duration, float magnitude, int rid)
     {
         if (rt == null) yield break;
         Vector2 origin = rt.anchoredPosition;
@@ -189,11 +202,13 @@ public class ScenePresenter : MonoBehaviour
         while (t < duration)
         {
             t += Time.deltaTime;
+            if (rt == null) break;   // 立绘随场景重载被销毁
             float x = Mathf.Sin(t * 60f) * magnitude;
             rt.anchoredPosition = origin + new Vector2(x, 0);
             yield return null;
         }
-        rt.anchoredPosition = origin;
+        if (rt != null) rt.anchoredPosition = origin;
+        if (rid == effectRequestId) effectRoutine = null;
     }
 
     // ---------- 淡入淡出 ----------
@@ -248,6 +263,13 @@ public class ScenePresenter : MonoBehaviour
     void RestartRoutine(Channel ch, IEnumerator routine)
     {
         if (ch.routine != null) StopCoroutine(ch.routine);
-        ch.routine = StartCoroutine(routine);
+        // 包装一层：协程自然结束时清空引用，IsAnimating 才能正确归零
+        ch.routine = StartCoroutine(WrapRoutine(ch, routine));
+    }
+
+    IEnumerator WrapRoutine(Channel ch, IEnumerator inner)
+    {
+        while (inner.MoveNext()) yield return inner.Current;
+        ch.routine = null;
     }
 }

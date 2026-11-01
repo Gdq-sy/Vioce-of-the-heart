@@ -7,7 +7,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 /// <summary>
 /// 统一的资源加载服务。负责 Addressables 加载、缓存、释放。
-/// 对外只暴露“按 key 拿 Sprite”的接口，不暴露 Addressables 细节。
+/// 对外暴露“按 key 拿 Sprite / AudioClip”的接口，不暴露 Addressables 细节。
 /// </summary>
 public class AssetService : MonoBehaviour
 {
@@ -16,6 +16,10 @@ public class AssetService : MonoBehaviour
     private readonly Dictionary<string, Sprite> spriteCache = new Dictionary<string, Sprite>();
     private readonly Dictionary<string, AsyncOperationHandle<Sprite>> handleCache
         = new Dictionary<string, AsyncOperationHandle<Sprite>>();
+
+    private readonly Dictionary<string, AudioClip> clipCache = new Dictionary<string, AudioClip>();
+    private readonly Dictionary<string, AsyncOperationHandle<AudioClip>> clipHandleCache
+        = new Dictionary<string, AsyncOperationHandle<AudioClip>>();
 
     void Awake()
     {
@@ -73,6 +77,43 @@ public class AssetService : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// 异步加载一段 AudioClip（BGM / 语音）。命中缓存则同步回调。
+    /// </summary>
+    public IEnumerator LoadClip(string key, Action<AudioClip> onDone)
+    {
+        if (string.IsNullOrEmpty(key))
+        {
+            onDone?.Invoke(null);
+            yield break;
+        }
+
+        if (clipCache.TryGetValue(key, out var cachedClip))
+        {
+            onDone?.Invoke(cachedClip);
+            yield break;
+        }
+
+        if (!clipHandleCache.TryGetValue(key, out var clipHandle))
+        {
+            clipHandle = Addressables.LoadAssetAsync<AudioClip>(key);
+            clipHandleCache[key] = clipHandle;
+        }
+
+        while (!clipHandle.IsDone) yield return null;
+
+        if (clipHandle.Status == AsyncOperationStatus.Succeeded && clipHandle.Result != null)
+        {
+            clipCache[key] = clipHandle.Result;
+            onDone?.Invoke(clipHandle.Result);
+        }
+        else
+        {
+            Debug.LogWarning($"[AssetService] 音频加载失败: {key}");
+            onDone?.Invoke(null);
+        }
+    }
+
     /// <summary>释放某个 key 的资源。如果还想用，需要重新加载。</summary>
     public void Release(string key)
     {
@@ -81,6 +122,13 @@ public class AssetService : MonoBehaviour
         {
             if (h.IsValid()) Addressables.Release(h);
             handleCache.Remove(key);
+        }
+
+        clipCache.Remove(key);
+        if (clipHandleCache.TryGetValue(key, out var ch))
+        {
+            if (ch.IsValid()) Addressables.Release(ch);
+            clipHandleCache.Remove(key);
         }
     }
 
@@ -93,5 +141,12 @@ public class AssetService : MonoBehaviour
         }
         handleCache.Clear();
         spriteCache.Clear();
+
+        foreach (var ch in clipHandleCache.Values)
+        {
+            if (ch.IsValid()) Addressables.Release(ch);
+        }
+        clipHandleCache.Clear();
+        clipCache.Clear();
     }
 }

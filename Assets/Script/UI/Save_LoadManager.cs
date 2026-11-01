@@ -127,10 +127,6 @@ public class Save_LoadManager : MonoBehaviour
                 {
                     byte[] bytes = File.ReadAllBytes(screenshotPath);
                     Texture2D tex = new Texture2D(2, 2);
-                    //if (sceneshots[i].texture != null)
-                    //{
-                    //    Destroy(sceneshots[i].texture);
-                    //}
                     tex.LoadImage(bytes);
                     sceneshots[i].texture = tex;
                 }
