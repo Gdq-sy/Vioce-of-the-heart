@@ -74,3 +74,4 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 *.db
+.codely-cli/UnityInsight/index.43d26815-e42f-4fb0-aa9a-5751e8fd1357.db
