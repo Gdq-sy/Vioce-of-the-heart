@@ -37,10 +37,10 @@ public class Read : MonoBehaviour
     private bool autoActive = false;
     private Coroutine autoRoutine;
     private int autoToken = 0;
-    private Color autoBaseColor = Color.white;
+    private Color autoBaseColor = new Color(1f, 1f, 1f, 0f);
 
     // 自动播放激活时的按钮反馈色
-    private static readonly Color AutoOnColor = new Color(0.56f, 0.93f, 0.56f, 1f);
+    private static readonly Color AutoOnColor = new Color(0f, 1f, 1f, 1f);
 
     private int hiddenClickBuffer = 0;
 
@@ -222,11 +222,7 @@ public class Read : MonoBehaviour
     void SetAuto(bool on)
     {
         autoActive = on;
-        if (auto != null && auto.image != null)
-        {
-            auto.image.color = on ? AutoOnColor : autoBaseColor;
-        }
-
+        auto.image.color = on ? AutoOnColor : autoBaseColor;
         if (on)
         {
             StartAutoRoutine();
